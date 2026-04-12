@@ -1,0 +1,95 @@
+# =========================
+# Python backend
+# =========================
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/.env
+.venv/
+venv/
+.env
+# Flask session files
+backend/flask_session/
+
+# =========================
+# Node frontend
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# =========================
+# Logs
+# =========================
+*.log
+debug-*.log
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE files
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.local
+.env.production
+
+# =========================
+# Python cache
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# =========================
+# Build artifacts
+# =========================
+build/
+dist/
+
+# Cursor IDE folder
+.cursor/
+
+# Any Python virtual environment anywhere
+venv/
+.venv/
+*/venv/
+*/.venv/
+
+node_modules/
+
+
+# Python environments
+venv/
+.venv/
+*/venv/
+*/.venv/
+
+# Flask session storage
+backend/flask_session/
+
+# Env files
+.env
+*/.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Node modules
+node_modules/
+
+# Cursor IDE
+.cursor/

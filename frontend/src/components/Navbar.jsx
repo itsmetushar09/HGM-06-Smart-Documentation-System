@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
+import { API_BASE } from "../config";
 
 export default function Navbar() {
+  const login = () => {
+    window.location.href = `${API_BASE}/auth/github/login`;
+  }
   return (
     <motion.div
       initial={{ y: -50, opacity: 0 }}
@@ -22,11 +26,12 @@ export default function Navbar() {
       </div>
 
       {/* Right */}
-      <div>
-        <button className="bg-blue-600 px-3 py-1 rounded-lg hover:bg-blue-500">
-          Login
-        </button>
-      </div>
+      <button
+        onClick={login}
+        className="bg-blue-600 px-3 py-1 rounded-lg hover:bg-blue-500"
+      >
+        Login with GitHub
+      </button>
     </motion.div>
   );
 }

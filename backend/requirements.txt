@@ -1,0 +1,9 @@
+flask
+pymongo
+python-dotenv
+requests
+flask-cors
+waitress
+gunicorn
+flask_cors
+flask-session

@@ -1,38 +1,84 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function AIChat() {
+export default function AIChat({ repo }) {
+
   const [messages, setMessages] = useState([
     { type: "bot", text: "Hi 👋 Ask me anything about the docs!" },
   ]);
+
   const [input, setInput] = useState("");
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
+
     if (!input.trim()) return;
 
-    const newMessages = [
-      ...messages,
-      { type: "user", text: input },
-      { type: "bot", text: "Thinking..." },
-    ];
+    const userMsg = {
+      type: "user",
+      text: input
+    };
 
-    setMessages(newMessages);
+    setMessages(prev => [...prev, userMsg]);
+
+    try {
+
+      const response = await fetch(
+        "http://localhost:8001/ask-ai",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            question: input,
+            repo: repo   // repo context ready for teammate's backend
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      setMessages(prev => [
+        ...prev,
+        {
+          type: "bot",
+          text: data.answer || "No response received."
+        }
+      ]);
+
+    } catch (error) {
+
+      setMessages(prev => [
+        ...prev,
+        {
+          type: "bot",
+          text: "Error contacting AI server."
+        }
+      ]);
+
+    }
+
     setInput("");
 
-    // Simulate AI response (later backend)
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev.slice(0, -1),
-        { type: "bot", text: "This is a demo AI response 🤖" },
-      ]);
-    }, 1000);
   };
 
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat Messages */}
+
+    <div className="flex flex-col h-full p-4">
+
+      {/* Title */}
+      <div className="font-semibold mb-3">
+        AI Assistant ({repo})
+      </div>
+
+
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 mb-3">
+
         {messages.map((msg, i) => (
+
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 10 }}
@@ -45,24 +91,36 @@ export default function AIChat() {
           >
             {msg.text}
           </motion.div>
+
         ))}
+
       </div>
+
 
       {/* Input */}
       <div className="flex gap-2">
+
         <input
           value={input}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) =>
+            e.key === "Enter" && sendMessage()
+          }
           placeholder="Ask something..."
           className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none"
         />
+
         <button
           onClick={sendMessage}
           className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-500"
         >
           Send
         </button>
+
       </div>
+
     </div>
+
   );
+
 }
