@@ -1,29 +1,25 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { API_BASE } from "../config";
 
-const docs = [
-  { id: "introduction", title: "Introduction" },
-  { id: "gettingStarted", title: "Getting Started" },
-];
-
-export default function Sidebar({ setActiveDoc, activeDoc }) {
+export default function Sidebar({ docs, setActiveDoc }) {
   return (
-    <div className="h-full bg-gray-950 text-white p-4">
-      <h2 className="text-lg mb-4 font-semibold">Docs</h2>
+    <div className="fixed left-0 top-0 h-screen w-64 bg-[#0b1b2b] border-r z-40">
 
-      {docs.map((doc) => (
-  <motion.div
-    key={doc.id}
-    whileHover={{ x: 5 }}
-    onClick={() => setActiveDoc(doc.id)}
-    className={`p-2 rounded-md cursor-pointer ${
-      activeDoc === doc.id
-        ? "bg-blue-600"
-        : "hover:bg-gray-800"
-    }`}
-  >
-    {doc.title}
-  </motion.div>
-))}
+      <div className="p-4 font-semibold">
+        Docs
+      </div>
+
+      {docs.map(doc => (
+        <div
+          key={doc.doc_id}
+          onClick={() => setActiveDoc(doc.doc_id)}
+          className="cursor-pointer hover:bg-gray-700 p-2"
+        >
+          {doc.title}
+        </div>
+      ))}
+
     </div>
   );
 }
