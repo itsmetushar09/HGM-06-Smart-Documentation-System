@@ -1,12 +1,197 @@
-start the backend
+# Smart Documentation System with AI
+
+SmartDocs is a two-part app:
+
+- A `Flask` backend that handles GitHub OAuth, fetches markdown files from a repository, stores docs in MongoDB, embeds them into Qdrant, and answers questions with Groq.
+- A `React + Vite` frontend that lets you log in with GitHub, choose a repo, browse markdown files, and chat with the AI assistant.
+
+## Architecture
+
+### Frontend
+
+- `frontend/src/pages/Home.jsx`: login entrypoint
+- `frontend/src/pages/Docs.jsx`: repo selection, doc viewer, AI chat layout
+- `frontend/src/components/RepoSelector.jsx`: loads GitHub repos and triggers indexing
+- `frontend/src/components/DocContent.jsx`: renders markdown
+- `frontend/src/components/AIChat.jsx`: sends questions to the backend
+
+### Backend
+
+- `backend/app.py`: Flask app, sessions, CORS, route registration
+- `backend/routes/auth_routes.py`: GitHub OAuth flow and repo listing
+- `backend/routes/docs_routes.py`: markdown ingestion and doc retrieval
+- `backend/routes/ai_routes.py`: AI question endpoint
+- `backend/services/rag_service.py`: embedding generation and Qdrant upsert
+- `backend/services/rag_query.py`: vector search plus Groq answer generation
+- `backend/config.py`: MongoDB and Qdrant clients
+
+## External Services You Need
+
+This project depends on:
+
+1. GitHub OAuth App
+2. MongoDB
+3. Qdrant
+4. Groq API key
+
+You can run MongoDB and Qdrant locally, or use cloud services such as MongoDB Atlas and Qdrant Cloud.
+
+## Local Setup
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 20+
+- npm
+- GitHub OAuth app credentials
+- MongoDB running locally or remotely
+- Qdrant running locally or remotely
+
+### 1. Start MongoDB and Qdrant
+
+If you want a fully local stack, Docker is the quickest route:
+
+```bash
+docker run -d --name smartdocs-mongo -p 27017:27017 mongo:7
+docker run -d --name smartdocs-qdrant -p 6333:6333 qdrant/qdrant
+```
+
+### 2. Create backend env file
+
+Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill in the secrets:
+
+```env
+FLASK_SECRET_KEY=change-me
+GITHUB_CLIENT_ID=your-github-oauth-client-id
+GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
+GROQ_API_KEY=your-groq-api-key
+MONGO_URI=mongodb://localhost:27017
+MONGO_TLS=false
+QDRANT_URL=http://localhost:6333
+QDRANT_HTTPS=false
+FRONTEND_URL=http://localhost:5173
+CORS_ORIGINS=http://localhost:5173
+SESSION_COOKIE_SAMESITE=Lax
+SESSION_COOKIE_SECURE=false
+```
+
+### 3. Create frontend env file
+
+Copy [`frontend/.env.example`](frontend/.env.example) to `frontend/.env`:
+
+```env
+VITE_API_BASE_URL=http://localhost:8001
+```
+
+### 4. Register your GitHub OAuth app
+
+Use these local callback values in GitHub:
+
+- Homepage URL: `http://localhost:5173`
+- Authorization callback URL: `http://localhost:8001/auth/github/callback`
+
+### 5. Install and run the backend
+
+On Windows PowerShell:
+
+```powershell
 cd backend
 python -m venv venv
-venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python app.py
+```
 
-start the frontend
+The backend runs on `http://localhost:8001`.
+
+### 6. Install and run the frontend
+
+In a second terminal:
+
+```powershell
 cd frontend
-npm install npm run dev
+npm install
+npm run dev
+```
 
-run both folders simultaneously
+The frontend runs on `http://localhost:5173`.
+
+### 7. Use the app
+
+1. Open `http://localhost:5173`
+2. Log in with GitHub
+3. Pick a repository
+4. Wait for markdown files to be indexed
+5. Open a doc or ask the AI assistant a question
+
+## What I Verified In This Repo
+
+- The frontend production build succeeds with `npm run build`
+- The backend dependencies were not installed in this workspace yet, so backend startup was not fully verified here
+
+## Deployment
+
+This codebase is now environment-driven, so you can deploy it without editing source files.
+
+### Recommended split
+
+- Frontend: Vercel or Netlify
+- Backend: Render, Railway, or another Python host
+- Data services: MongoDB Atlas and Qdrant Cloud
+
+### Backend deployment env vars
+
+Set these in your backend host:
+
+```env
+FLASK_SECRET_KEY=strong-random-secret
+GITHUB_CLIENT_ID=your-production-github-client-id
+GITHUB_CLIENT_SECRET=your-production-github-client-secret
+GROQ_API_KEY=your-groq-api-key
+MONGO_URI=your-production-mongodb-uri
+MONGO_TLS=true
+MONGO_TLS_ALLOW_INVALID_CERTIFICATES=false
+QDRANT_URL=https://your-qdrant-endpoint
+QDRANT_HTTPS=true
+QDRANT_API_KEY=your-qdrant-api-key
+FRONTEND_URL=https://your-frontend-domain
+CORS_ORIGINS=https://your-frontend-domain
+SESSION_COOKIE_SAMESITE=None
+SESSION_COOKIE_SECURE=true
+```
+
+Run command examples:
+
+- Gunicorn: `gunicorn app:app`
+- Waitress on Windows: `waitress-serve --host 0.0.0.0 --port 8001 app:app`
+
+### Frontend deployment env vars
+
+Set this in Vercel or Netlify:
+
+```env
+VITE_API_BASE_URL=https://your-backend-domain
+```
+
+### GitHub OAuth production callback
+
+Update your GitHub OAuth app with your deployed backend callback:
+
+- Authorization callback URL: `https://your-backend-domain/auth/github/callback`
+
+### Important production note
+
+Because the frontend and backend usually live on different domains in production, the backend must use:
+
+- `SESSION_COOKIE_SAMESITE=None`
+- `SESSION_COOKIE_SECURE=true`
+- `CORS_ORIGINS=https://your-frontend-domain`
+
+Without those settings, GitHub login sessions will not be preserved across sites.
+
+## Current Caveats In The Codebase
+
+- `backend/services/rag_service.py` and `backend/services/rag_query.py` load the sentence-transformer at import time, so first startup can be slow
+- embeddings are stored as whole-document payloads, not smaller chunks, which can reduce answer quality on large markdown files
+- repo loading fetches every markdown file recursively, so large repositories can take time
+- there are no automated tests yet

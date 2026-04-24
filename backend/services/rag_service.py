@@ -1,14 +1,12 @@
 from config import qdrant_client as client
-from sentence_transformers import SentenceTransformer
 from qdrant_client.models import VectorParams, Distance
 import uuid
 import time
+from services.embedding_model import get_embedder
 
 # ======================
 # Embedding Model
 # ======================
-
-model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 COLLECTION = "docs_vectors"
 
@@ -67,6 +65,10 @@ def safe_upsert(collection_name, points):
 # ======================
 
 def embed_and_store(repo, owner, docs):
+    if not docs:
+        return
+
+    model = get_embedder()
 
     # Ensure collection exists
     if not safe_collection_exists(COLLECTION):

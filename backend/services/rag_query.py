@@ -1,10 +1,10 @@
 from config import qdrant_client as client
 from qdrant_client.models import Filter, FieldCondition, MatchValue
-from sentence_transformers import SentenceTransformer
 from groq import Groq
 from dotenv import load_dotenv
 import os
 import time
+from services.embedding_model import get_embedder
 
 # Load environment variables
 load_dotenv()
@@ -18,8 +18,6 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # ======================
 # Models
 # ======================
-
-embedder = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 groq_client = Groq(api_key=GROQ_API_KEY)
 
@@ -46,6 +44,7 @@ def safe_query(**kwargs):
 # ======================
 
 def answer_question(question, repo):
+    embedder = get_embedder()
 
     # Convert question to embedding vector
     vector = embedder.encode(question).tolist()

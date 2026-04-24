@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../config";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function Home() {
 
       <button
         onClick={() => window.location.href =
-          "http://localhost:8001/auth/github/login"}
+          `${API_BASE}/auth/github/login`}
         className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-500"
       >
         Go to Docs
