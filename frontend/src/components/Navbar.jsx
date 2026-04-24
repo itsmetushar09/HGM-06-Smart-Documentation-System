@@ -3,11 +3,13 @@ import { Search } from "lucide-react";
 import { API_BASE } from "../config";
 
 export default function Navbar() {
+  const MotionDiv = motion.div;
+
   const login = () => {
     window.location.href = `${API_BASE}/auth/github/login`;
   }
   return (
-    <motion.div
+    <MotionDiv
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className="h-14 bg-gray-900 text-white flex items-center justify-between px-6 shadow-md"
@@ -32,6 +34,6 @@ export default function Navbar() {
       >
         Login with GitHub
       </button>
-    </motion.div>
+    </MotionDiv>
   );
 }

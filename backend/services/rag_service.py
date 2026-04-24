@@ -1,5 +1,12 @@
 from config import qdrant_client as client
-from qdrant_client.models import VectorParams, Distance
+from qdrant_client.models import (
+    VectorParams,
+    Distance,
+    Filter,
+    FilterSelector,
+    FieldCondition,
+    MatchValue,
+)
 import uuid
 import time
 from services.embedding_model import get_embedder
@@ -60,6 +67,35 @@ def safe_upsert(collection_name, points):
     raise Exception("Failed to upsert vectors")
 
 
+def safe_delete_repo_points(collection_name, repo, owner):
+
+    for _ in range(3):
+        try:
+            return client.delete(
+                collection_name=collection_name,
+                points_selector=FilterSelector(
+                    filter=Filter(
+                        must=[
+                            FieldCondition(
+                                key="repo",
+                                match=MatchValue(value=repo)
+                            ),
+                            FieldCondition(
+                                key="owner",
+                                match=MatchValue(value=owner)
+                            ),
+                        ]
+                    )
+                ),
+                wait=True
+            )
+        except Exception as e:
+            print("Retrying delete:", e)
+            time.sleep(1)
+
+    raise Exception("Failed to delete old vectors")
+
+
 # ======================
 # Main embedding pipeline
 # ======================
@@ -74,6 +110,9 @@ def embed_and_store(repo, owner, docs):
     if not safe_collection_exists(COLLECTION):
 
         safe_create_collection(COLLECTION)
+
+    # Remove stale vectors before re-indexing this repo.
+    safe_delete_repo_points(COLLECTION, repo, owner)
 
     # Extract text
     texts = [doc["content"] for doc in docs]

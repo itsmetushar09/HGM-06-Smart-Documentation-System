@@ -1,9 +1,6 @@
-import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
 
 export default function Home() {
-  const navigate = useNavigate();
-
   return (
     <div className="h-screen flex flex-col items-center justify-center gap-4">
       <h1 className="text-3xl">🚀 Smart Docs Home Page</h1>

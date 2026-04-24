@@ -1,7 +1,3 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { API_BASE } from "../config";
-
 export default function Sidebar({ docs, setActiveDoc }) {
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-[#0b1b2b] border-r z-40">

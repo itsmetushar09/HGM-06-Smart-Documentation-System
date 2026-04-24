@@ -35,6 +35,9 @@ def github_callback():
 
     code = request.args.get("code")
 
+    if not code:
+        return jsonify({"error": "missing oauth code"}), 400
+
     token_response = requests.post(
         "https://github.com/login/oauth/access_token",
         headers={"Accept": "application/json"},
@@ -42,7 +45,8 @@ def github_callback():
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
             "code": code
-        }
+        },
+        timeout=30
     )
 
     token_json = token_response.json()
@@ -57,10 +61,17 @@ def github_callback():
 
     user_response = requests.get(
         "https://api.github.com/user",
-        headers={"Authorization": f"Bearer {access_token}"}
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=30
     )
 
     user_data = user_response.json()
+
+    if "id" not in user_data or "login" not in user_data:
+        return jsonify({
+            "message": "Failed to fetch GitHub user",
+            "github_response": user_data
+        }), 400
 
     github_id = user_data["id"]
     username = user_data["login"]
@@ -71,12 +82,8 @@ def github_callback():
 
     save_user({
         "github_id": github_id,
-        "username": username,
-        "access_token": access_token
+        "username": username
     })
-
-    print("TOKEN STORED:", access_token)
-    print("SESSION:", dict(session))
 
     return redirect(_frontend_docs_url())
 
@@ -93,7 +100,8 @@ def get_user_repos():
         headers={
             "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github+json"
-        }
+        },
+        timeout=30
     )
 
     return jsonify(repos.json())
