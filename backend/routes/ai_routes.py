@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from services.rag_query import answer_question
 
 ai_bp = Blueprint("ai", __name__)
@@ -11,13 +11,13 @@ def ask_ai():
 
     question = (data.get("question") or "").strip()
     repo = data.get("repo")
-    owner = session.get("owner")
+    owner = data.get("owner")
 
     if not question or not repo:
         return jsonify({"error": "question and repo are required"}), 400
 
     if not owner:
-        return jsonify({"error": "repository owner not found in session"}), 400
+        return jsonify({"error": "owner is required"}), 400
 
     answer = answer_question(question, repo, owner)
 

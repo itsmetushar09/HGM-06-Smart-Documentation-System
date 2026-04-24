@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import RepoSelector from "../components/RepoSelector";
 import Sidebar from "../components/Sidebar";
-import DocContent from "../components/DocContent";
-import AIChat from "../components/AIChat";
 import { API_BASE } from "../config";
+
+const DocContent = lazy(() => import("../components/DocContent"));
+const AIChat = lazy(() => import("../components/AIChat"));
 
 export default function Docs() {
 
@@ -13,17 +14,25 @@ export default function Docs() {
 
   const [showSidebar, setShowSidebar] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
 
   useEffect(() => {
 
     if (!repo?.name) return;
 
-    fetch(`${API_BASE}/docs?repo=${repo.name}`, {
-      credentials: "include"
-    })
-      .then(res => res.json())
+    fetch(`${API_BASE}/docs?repo=${encodeURIComponent(repo.name)}&owner=${encodeURIComponent(repo.owner)}`)
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load docs");
+        }
+
+        return data;
+      })
       .then(data => {
+        setLoadError("");
 
         setDocs(data);
 
@@ -31,6 +40,11 @@ export default function Docs() {
           setActiveDoc(data[0].doc_id);
         }
 
+      })
+      .catch((error) => {
+        setDocs([]);
+        setActiveDoc(null);
+        setLoadError(error.message || "Failed to load docs for this repository.");
       });
 
   }, [repo]);
@@ -68,9 +82,11 @@ export default function Docs() {
 
             <button
               onClick={() => {
+                setShowChat(false);
                 setRepo(null);
                 setDocs([]);
                 setActiveDoc(null);
+                setLoadError("");
               }}
             >
               Change Repo
@@ -88,15 +104,28 @@ export default function Docs() {
             {!repo ? (
               <RepoSelector setRepo={setRepo} />
             ) : (
-              <DocContent activeDoc={activeDoc} />
+              <Suspense fallback={<div>Loading document viewer...</div>}>
+                {loadError ? (
+                  <div className="text-red-500">{loadError}</div>
+                ) : (
+                  <DocContent
+                    key={`${repo.owner}/${repo.name}:${activeDoc || ""}`}
+                    activeDoc={activeDoc}
+                    repo={repo.name}
+                    owner={repo.owner}
+                  />
+                )}
+              </Suspense>
             )}
 
           </div>
 
           {/* Chat panel */}
-          {showChat && (
+          {showChat && repo && (
             <div className="w-80 border-l bg-[#0b1b2b]">
-              <AIChat repo={repo.name} />
+              <Suspense fallback={<div className="p-4">Loading chat...</div>}>
+                <AIChat key={`${repo.owner}/${repo.name}`} repo={repo.name} owner={repo.owner} />
+              </Suspense>
             </div>
           )}
 

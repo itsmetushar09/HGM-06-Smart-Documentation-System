@@ -135,9 +135,6 @@ def load_repo():
     if not owner or not repo:
         return jsonify({"error": "owner/repo or a GitHub repository URL is required"}), 400
 
-    session["repo"] = repo
-    session["owner"] = owner
-
     # fetch markdown recursively
     entries = fetch_markdown_files(owner, repo)
 
@@ -192,13 +189,9 @@ def load_repo():
 def list_docs():
 
     repo = request.args.get("repo")
+    owner = request.args.get("owner") or session.get("owner")
 
-    if not repo:
-        return jsonify([])
-
-    owner = session.get("owner")
-
-    if not owner:
+    if not repo or not owner:
         return jsonify([])
 
 
@@ -220,8 +213,8 @@ def list_docs():
 @docs_bp.route("/docs/<path:doc_id>", methods=["GET"])
 def get_doc(doc_id):
 
-    repo = session.get("repo")
-    owner = session.get("owner")
+    repo = request.args.get("repo") or session.get("repo")
+    owner = request.args.get("owner") or session.get("owner")
 
     if not repo or not owner:
         return jsonify({"content": ""})

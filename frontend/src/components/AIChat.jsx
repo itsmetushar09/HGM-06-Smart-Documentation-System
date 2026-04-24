@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { API_BASE } from "../config";
 
-export default function AIChat({ repo }) {
+export default function AIChat({ repo, owner }) {
   const MotionDiv = motion.div;
 
   const [messages, setMessages] = useState([
@@ -28,18 +28,22 @@ export default function AIChat({ repo }) {
         `${API_BASE}/ask-ai`,
         {
           method: "POST",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             question: input,
-            repo: repo   // repo context ready for teammate's backend
+            repo: repo,
+            owner: owner
           })
         }
       );
 
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "AI request failed");
+      }
 
       setMessages(prev => [
         ...prev,
