@@ -4,9 +4,9 @@ import time
 import requests
 
 from flask import Blueprint, jsonify, request, session
-
+from config import qdrant_client as client
 from config import docs_collection, repos_collection
-
+from services.rag_service import embed_and_store
 
 docs_bp = Blueprint("docs", __name__)
 
@@ -117,6 +117,7 @@ def load_repo():
 
     # fetch markdown recursively
     entries = fetch_markdown_files(owner, repo)
+    embed_and_store(repo, owner, entries)
 
 
     # clear previous docs for repo
