@@ -6,7 +6,6 @@ from flask_session import Session
 from flask_cors import CORS
 import os
 
-from routes.auth_routes import auth_bp
 from routes.docs_routes import docs_bp
 from routes.ai_routes import ai_bp
 
@@ -60,7 +59,6 @@ def create_app():
     )
 
     # 📦 Routes
-    app.register_blueprint(auth_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(ai_bp)
 

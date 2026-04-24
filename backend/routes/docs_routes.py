@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from urllib.parse import urlparse
 import requests
 
 from flask import Blueprint, jsonify, request, session
@@ -36,7 +37,7 @@ def _agent_log(hypothesis_id: str, location: str, message: str, data: dict | Non
 _agent_log("H1", "docs_routes.py:module", "docs_routes module loaded", {})
 
 
-# github auth header helper
+# github request header helper
 def _github_headers():
 
     token = session.get("github_token")
@@ -48,6 +49,30 @@ def _github_headers():
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json"
     }
+
+
+def _parse_repo_reference(data):
+    owner = (data.get("owner") or "").strip()
+    repo = (data.get("repo") or "").strip()
+    repo_url = (data.get("repoUrl") or data.get("repo_url") or "").strip()
+
+    if owner and repo:
+        return owner, repo
+
+    if repo_url and "/" in repo_url and "github.com" not in repo_url:
+        parts = [part for part in repo_url.strip("/").split("/") if part]
+
+        if len(parts) >= 2:
+            return parts[0], parts[1].removesuffix(".git")
+
+    if repo_url:
+        parsed = urlparse(repo_url)
+        path_parts = [part for part in parsed.path.split("/") if part]
+
+        if "github.com" in parsed.netloc and len(path_parts) >= 2:
+            return path_parts[0], path_parts[1].removesuffix(".git")
+
+    return "", ""
 
 
 # recursive markdown fetcher
@@ -105,20 +130,22 @@ def load_repo():
 
     data = request.get_json() or {}
 
-    owner = data.get("owner")
-    repo = data.get("repo")
+    owner, repo = _parse_repo_reference(data)
 
     if not owner or not repo:
-        return jsonify({"error": "owner and repo required"}), 400
-
-    if not session.get("github_token"):
-        return jsonify({"error": "not authenticated"}), 401
+        return jsonify({"error": "owner/repo or a GitHub repository URL is required"}), 400
 
     session["repo"] = repo
     session["owner"] = owner
 
     # fetch markdown recursively
     entries = fetch_markdown_files(owner, repo)
+
+    if not entries:
+        return jsonify({
+            "error": "No public markdown files found, or the repository is not accessible"
+        }), 404
+
     embed_and_store(repo, owner, entries)
 
 
@@ -153,7 +180,10 @@ def load_repo():
 
     return jsonify({
         "ok": True,
-        "files_loaded": len(entries)
+        "files_loaded": len(entries),
+        "owner": owner,
+        "repo": repo,
+        "full_name": f"{owner}/{repo}",
     })
 
 

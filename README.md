@@ -2,8 +2,8 @@
 
 SmartDocs is a two-part app:
 
-- A `Flask` backend that handles GitHub OAuth, fetches markdown files from a repository, stores docs in MongoDB, embeds them into Qdrant, and answers questions with Groq.
-- A `React + Vite` frontend that lets you log in with GitHub, choose a repo, browse markdown files, and chat with the AI assistant.
+- A `Flask` backend that fetches markdown files from a public GitHub repository, stores docs in MongoDB, embeds them into Qdrant, and answers questions with Groq.
+- A `React + Vite` frontend that lets you enter a public GitHub repo, browse markdown files, and chat with the AI assistant.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ SmartDocs is a two-part app:
 ### Backend
 
 - `backend/app.py`: Flask app, sessions, CORS, route registration
-- `backend/routes/auth_routes.py`: GitHub OAuth flow and repo listing
+- `backend/routes/auth_routes.py`: legacy OAuth route file, no longer used by the app flow
 - `backend/routes/docs_routes.py`: markdown ingestion and doc retrieval
 - `backend/routes/ai_routes.py`: AI question endpoint
 - `backend/services/rag_service.py`: embedding generation and Qdrant upsert
@@ -29,10 +29,9 @@ SmartDocs is a two-part app:
 
 This project depends on:
 
-1. GitHub OAuth App
-2. MongoDB
-3. Qdrant
-4. Groq API key
+1. MongoDB
+2. Qdrant
+3. Groq API key
 
 You can run MongoDB and Qdrant locally, or use cloud services such as MongoDB Atlas and Qdrant Cloud.
 
@@ -43,7 +42,6 @@ You can run MongoDB and Qdrant locally, or use cloud services such as MongoDB At
 - Python 3.11+
 - Node.js 20+
 - npm
-- GitHub OAuth app credentials
 - MongoDB running locally or remotely
 - Qdrant running locally or remotely
 
@@ -62,8 +60,6 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and fill i
 
 ```env
 FLASK_SECRET_KEY=change-me
-GITHUB_CLIENT_ID=your-github-oauth-client-id
-GITHUB_CLIENT_SECRET=your-github-oauth-client-secret
 GROQ_API_KEY=your-groq-api-key
 MONGO_URI=mongodb://localhost:27017
 MONGO_TLS=false
@@ -83,14 +79,7 @@ Copy [`frontend/.env.example`](frontend/.env.example) to `frontend/.env`:
 VITE_API_BASE_URL=http://localhost:8001
 ```
 
-### 4. Register your GitHub OAuth app
-
-Use these local callback values in GitHub:
-
-- Homepage URL: `http://localhost:5173`
-- Authorization callback URL: `http://localhost:8001/auth/github/callback`
-
-### 5. Install and run the backend
+### 4. Install and run the backend
 
 On Windows PowerShell:
 
@@ -104,7 +93,7 @@ python app.py
 
 The backend runs on `http://localhost:8001`.
 
-### 6. Install and run the frontend
+### 5. Install and run the frontend
 
 In a second terminal:
 
@@ -116,11 +105,11 @@ npm run dev
 
 The frontend runs on `http://localhost:5173`.
 
-### 7. Use the app
+### 6. Use the app
 
 1. Open `http://localhost:5173`
-2. Log in with GitHub
-3. Pick a repository
+2. Go to `/docs`
+3. Paste a public GitHub repo URL or `owner/repo`
 4. Wait for markdown files to be indexed
 5. Open a doc or ask the AI assistant a question
 
@@ -145,8 +134,6 @@ Set these in your backend host:
 
 ```env
 FLASK_SECRET_KEY=strong-random-secret
-GITHUB_CLIENT_ID=your-production-github-client-id
-GITHUB_CLIENT_SECRET=your-production-github-client-secret
 GROQ_API_KEY=your-groq-api-key
 MONGO_URI=your-production-mongodb-uri
 MONGO_TLS=true
@@ -173,12 +160,6 @@ Set this in Vercel or Netlify:
 VITE_API_BASE_URL=https://your-backend-domain
 ```
 
-### GitHub OAuth production callback
-
-Update your GitHub OAuth app with your deployed backend callback:
-
-- Authorization callback URL: `https://your-backend-domain/auth/github/callback`
-
 ### Important production note
 
 Because the frontend and backend usually live on different domains in production, the backend must use:
@@ -187,7 +168,7 @@ Because the frontend and backend usually live on different domains in production
 - `SESSION_COOKIE_SECURE=true`
 - `CORS_ORIGINS=https://your-frontend-domain`
 
-Without those settings, GitHub login sessions will not be preserved across sites.
+Without those settings, repo-selection session state will not be preserved across sites.
 
 ## Current Caveats In The Codebase
 
