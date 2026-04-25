@@ -6,12 +6,9 @@ import os
 import time
 from services.embedding_model import get_embedder
 
-# Load environment variables
+
 load_dotenv()
 
-# ======================
-# API Keys
-# ======================
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
@@ -28,11 +25,6 @@ def get_groq_client():
     return Groq(api_key=GROQ_API_KEY)
 
 
-# ======================
-# Safe Query Wrapper
-# Prevents crashes if DNS fails once
-# ======================
-
 def safe_query(**kwargs):
     for _ in range(3):
         try:
@@ -43,9 +35,6 @@ def safe_query(**kwargs):
     raise Exception("Qdrant temporarily unreachable")
 
 
-# ======================
-# RAG Answer Function
-# ======================
 
 def answer_question(question, repo, owner):
     embedder = get_embedder()
