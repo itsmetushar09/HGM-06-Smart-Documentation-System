@@ -1,36 +1,43 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-
 import { API_BASE } from "../config";
 
 export default function AIChat({ repo, owner }) {
   const MotionDiv = motion.div;
+
   const [messages, setMessages] = useState([
-    { type: "bot", text: "Hi! Ask me anything about the docs." },
+    { type: "bot", text: "Hi 👋 Ask me anything about the docs!" },
   ]);
+
   const [input, setInput] = useState("");
 
   const sendMessage = async () => {
+
     if (!input.trim()) return;
 
-    const question = input.trim();
-    const userMsg = { type: "user", text: question };
+    const userMsg = {
+      type: "user",
+      text: input
+    };
 
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
+    setMessages(prev => [...prev, userMsg]);
 
     try {
-      const response = await fetch(`${API_BASE}/ask-ai`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question,
-          repo,
-          owner,
-        }),
-      });
+
+      const response = await fetch(
+        `${API_BASE}/ask-ai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            question: input,
+            repo: repo,
+            owner: owner
+          })
+        }
+      );
 
       const data = await response.json();
 
@@ -38,35 +45,51 @@ export default function AIChat({ repo, owner }) {
         throw new Error(data.error || "AI request failed");
       }
 
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           type: "bot",
-          text: data.answer || "No response received.",
-        },
+          text: data.answer || "No response received."
+        }
       ]);
-    } catch (error) {
-      setMessages((prev) => [
+
+    } catch {
+
+      setMessages(prev => [
         ...prev,
         {
           type: "bot",
-          text: error.message || "Error contacting AI server.",
-        },
+          text: "Error contacting AI server."
+        }
       ]);
+
     }
+
+    setInput("");
+
   };
 
-  return (
-    <div className="flex h-full flex-col p-4">
-      <div className="mb-3 font-semibold text-white">AI Assistant ({repo})</div>
 
-      <div className="mb-3 flex-1 space-y-3 overflow-y-auto">
+  return (
+
+    <div className="flex flex-col h-full p-4">
+
+      {/* Title */}
+      <div className="font-semibold mb-3">
+        AI Assistant ({repo})
+      </div>
+
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto space-y-3 mb-3">
+
         {messages.map((msg, i) => (
+
           <MotionDiv
             key={i}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`max-w-[80%] rounded-lg p-2 ${
+            className={`p-2 rounded-lg max-w-[80%] ${
               msg.type === "user"
                 ? "ml-auto bg-blue-600 text-white"
                 : "bg-gray-200 text-black"
@@ -74,25 +97,36 @@ export default function AIChat({ repo, owner }) {
           >
             {msg.text}
           </MotionDiv>
+
         ))}
+
       </div>
 
+
+      {/* Input */}
       <div className="flex gap-2">
+
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={(e) =>
+            e.key === "Enter" && sendMessage()
+          }
           placeholder="Ask something..."
-          className="flex-1 rounded-lg border px-3 py-2 text-sm text-black outline-none"
+          className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none"
         />
 
         <button
           onClick={sendMessage}
-          className="rounded-lg bg-blue-600 px-4 text-white hover:bg-blue-500"
+          className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-500"
         >
           Send
         </button>
+
       </div>
+
     </div>
+
   );
+
 }

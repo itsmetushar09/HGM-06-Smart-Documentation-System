@@ -7,6 +7,7 @@ const DocContent = lazy(() => import("../components/DocContent"));
 const AIChat = lazy(() => import("../components/AIChat"));
 
 export default function Docs() {
+
   const [repo, setRepo] = useState(null);
   const [docs, setDocs] = useState([]);
   const [activeDoc, setActiveDoc] = useState(null);
@@ -17,6 +18,7 @@ export default function Docs() {
 
 
   useEffect(() => {
+
     if (!repo?.name) return;
 
     fetch(`${API_BASE}/docs?repo=${encodeURIComponent(repo.name)}&owner=${encodeURIComponent(repo.owner)}`)
@@ -29,15 +31,15 @@ export default function Docs() {
 
         return data;
       })
-      .then((data) => {
+      .then(data => {
         setLoadError("");
+
         setDocs(data);
 
         if (data.length > 0) {
           setActiveDoc(data[0].doc_id);
-        } else {
-          setActiveDoc(null);
         }
+
       })
       .catch((error) => {
         setDocs([]);
@@ -71,11 +73,11 @@ export default function Docs() {
           <div className="flex gap-4 text-blue-400">
 
             <button onClick={() => setShowSidebar(!showSidebar)}>
-              {showSidebar ? "Hide Sidebar" : "Show Sidebar"}
+              Toggle Sidebar
             </button>
 
             <button onClick={() => setShowChat(!showChat)}>
-              {showChat ? "Hide Chat" : "Show Chat"}
+              Toggle Chat
             </button>
 
             <button
@@ -119,17 +121,11 @@ export default function Docs() {
           </div>
 
           {/* Chat panel */}
-          {showChat && (
+          {showChat && repo && (
             <div className="w-80 border-l bg-[#0b1b2b]">
-              {repo ? (
-                <Suspense fallback={<div className="p-4">Loading chat...</div>}>
-                  <AIChat key={`${repo.owner}/${repo.name}`} repo={repo.name} owner={repo.owner} />
-                </Suspense>
-              ) : (
-                <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate-300">
-                  Load a repository first, then the AI chat will answer questions about its markdown docs.
-                </div>
-              )}
+              <Suspense fallback={<div className="p-4">Loading chat...</div>}>
+                <AIChat key={`${repo.owner}/${repo.name}`} repo={repo.name} owner={repo.owner} />
+              </Suspense>
             </div>
           )}
 
