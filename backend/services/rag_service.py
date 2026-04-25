@@ -1,17 +1,13 @@
-<<<<<<< HEAD
 from config import qdrant_client as qdrant
 from qdrant_client.models import VectorParams, Distance
 from huggingface_hub import InferenceClient
-=======
-from config import qdrant_client as client
-from qdrant_client.models import VectorParams, Distance
->>>>>>> parent of a89e188 (real fix)
+from dotenv import load_dotenv
 import uuid
 import time
 import os
-from dotenv import load_dotenv
 
 load_dotenv()
+
 
 hf_client = InferenceClient(token=os.getenv("HF_TOKEN"))
 
@@ -63,38 +59,22 @@ def safe_upsert(collection_name, points):
     raise Exception("Failed to upsert vectors")
 
 
-<<<<<<< HEAD
 
 
 def embed_texts(texts):
 
-    embeddings = []
-
-    for text in texts:
-        vector = hf_client.feature_extraction(
-            text,
-            model="sentence-transformers/all-MiniLM-L6-v2"
-        )
-        embeddings.append(vector)
-
-    return embeddings
+    return hf_client.feature_extraction(
+        texts,
+        model="sentence-transformers/all-MiniLM-L6-v2"
+    )
 
 
-=======
-# ======================
-# Main embedding pipeline
-# ======================
->>>>>>> parent of a89e188 (real fix)
 
 def embed_and_store(repo, owner, docs):
 
     if not safe_collection_exists(COLLECTION):
         safe_create_collection(COLLECTION)
 
-<<<<<<< HEAD
-=======
-    # Extract text
->>>>>>> parent of a89e188 (real fix)
     texts = [doc["content"] for doc in docs]
 
     vectors = embed_texts(texts)
@@ -116,3 +96,4 @@ def embed_and_store(repo, owner, docs):
     safe_upsert(COLLECTION, points)
 
     print(f"Embedded {len(points)} documents from repo: {repo}")
+

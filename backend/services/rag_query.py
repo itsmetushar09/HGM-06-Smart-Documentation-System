@@ -1,9 +1,6 @@
 from config import qdrant_client as client
 from qdrant_client.models import Filter, FieldCondition, MatchValue
-<<<<<<< HEAD
 from huggingface_hub import InferenceClient
-=======
->>>>>>> parent of a89e188 (real fix)
 from groq import Groq
 from dotenv import load_dotenv
 import os
@@ -17,23 +14,9 @@ hf_client = InferenceClient(token=os.getenv("HF_TOKEN"))
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# ======================
-# Models
-# ======================
-
-groq_client = Groq(api_key=GROQ_API_KEY)
-
 COLLECTION = "docs_vectors"
 
 
-<<<<<<< HEAD
-=======
-# ======================
-# Safe Query Wrapper
-# Prevents crashes if DNS fails once
-# ======================
-
->>>>>>> parent of a89e188 (real fix)
 def safe_query(**kwargs):
 
     for _ in range(3):
@@ -47,12 +30,7 @@ def safe_query(**kwargs):
 
 
 
-<<<<<<< HEAD
 def embed_query(question):
-=======
-def answer_question(question, repo):
-    embedder = get_embedder()
->>>>>>> parent of a89e188 (real fix)
 
     return hf_client.feature_extraction(
         question,
@@ -87,10 +65,6 @@ def answer_question(question, repo):
     if not context:
         return "No relevant documentation found for this repository."
 
-<<<<<<< HEAD
-=======
-    # Send context to Groq LLM
->>>>>>> parent of a89e188 (real fix)
     completion = groq_client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
@@ -106,3 +80,6 @@ def answer_question(question, repo):
     )
 
     return completion.choices[0].message.content
+
+
+
