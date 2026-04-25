@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { API_BASE } from "../config";
 
 export default function AIChat({ repo }) {
 
@@ -24,7 +23,7 @@ export default function AIChat({ repo }) {
     try {
 
       const response = await fetch(
-        `${API_BASE}/ask-ai`,
+        "http://localhost:8001/ask-ai",
         {
           method: "POST",
           credentials: "include",

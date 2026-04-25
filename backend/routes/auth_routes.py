@@ -14,11 +14,6 @@ CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
 
-def _frontend_docs_url():
-    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
-    return f"{frontend_url}/docs"
-
-
 @auth_bp.route("/auth/github/login")
 def github_login():
 
@@ -78,7 +73,7 @@ def github_callback():
     print("TOKEN STORED:", access_token)
     print("SESSION:", dict(session))
 
-    return redirect(_frontend_docs_url())
+    return redirect("http://localhost:5173/docs")
 
 @auth_bp.route("/auth/github/repos")
 def get_user_repos():

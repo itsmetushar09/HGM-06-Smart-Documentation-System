@@ -5,7 +5,10 @@ requests
 flask-cors
 waitress
 gunicorn
+flask_cors
 flask-session
 qdrant-client
 sentence-transformers
+langchain
 groq
+python-dotenv

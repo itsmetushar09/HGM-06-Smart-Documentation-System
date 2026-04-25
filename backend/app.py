@@ -8,54 +8,26 @@ from routes.docs_routes import docs_bp
 from flask_cors import CORS
 from routes.ai_routes import ai_bp
 
-def _get_bool_env(name, default=False):
-    value = os.getenv(name)
-
-    if value is None:
-        return default
-
-    return value.strip().lower() in {"1", "true", "yes", "on"}
-
-
-def _get_cors_origins():
-    raw_value = (
-        os.getenv("CORS_ORIGINS")
-        or os.getenv("FRONTEND_URL")
-        or "http://localhost:5173"
-    )
-
-    return [
-        origin.strip().rstrip("/")
-        for origin in raw_value.split(",")
-        if origin.strip()
-    ]
-
-
 def create_app():
 
     app = Flask(__name__)
-    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+    
 
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY","smartdocs-secret-key")
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["SESSION_PREMANENT"]=False
     app.config["SESSION_USE_SIGNER"]=True
-    app.config["SESSION_COOKIE_SAMESITE"]=os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
-    app.config["SESSION_COOKIE_SECURE"]=_get_bool_env("SESSION_COOKIE_SECURE", False)
+    app.config["SESSION_COOKIE_SAMESITE"]="Lax"
+    app.config["SESSION_COOKIE_SECURE"]=False
     app.config["SESSION_COOKIE_HTTPONLY"]=True
-    app.config["FRONTEND_URL"] = frontend_url
-
+    
 
     Session(app)
-    CORS(app,supports_credentials=True,origins=_get_cors_origins())
+    CORS(app,supports_credentials=True,origins=["http://localhost:5173"])
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(ai_bp)
-
-    @app.get("/health")
-    def health():
-        return {"ok": True}, 200
 
     return app
 
@@ -64,5 +36,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "8001"))
-    app.run(host="0.0.0.0",debug=False, port=port)
+    app.run(host="0.0.0.0",debug=False, port=8001)
