@@ -1,48 +1,48 @@
 from config import qdrant_client as client
 from qdrant_client.models import Filter, FieldCondition, MatchValue
+from huggingface_hub import InferenceClient
+from groq import Groq
 from dotenv import load_dotenv
-from functools import lru_cache
 import os
 import time
-from services.embedding_model import get_embedder
-
 
 load_dotenv()
 
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+hf_client = InferenceClient(token=os.getenv("HF_TOKEN"))
+
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 COLLECTION = "docs_vectors"
 
 
-@lru_cache(maxsize=1)
-def get_groq_client():
-    if not GROQ_API_KEY:
-        raise ValueError("GROQ_API_KEY is not configured")
-
-    from groq import Groq
-
-    return Groq(api_key=GROQ_API_KEY)
-
-
 def safe_query(**kwargs):
+
     for _ in range(3):
         try:
             return client.query_points(**kwargs)
         except Exception as e:
             print("Retrying Qdrant query:", e)
             time.sleep(1)
+
     raise Exception("Qdrant temporarily unreachable")
 
 
 
-def answer_question(question, repo, owner):
-    embedder = get_embedder()
+def embed_query(question):
 
-    # Convert question to embedding vector
-    vector = embedder.encode(question).tolist()
+    return hf_client.feature_extraction(
+        question,
+        model="sentence-transformers/all-MiniLM-L6-v2"
+    )
 
-    # Query repo-scoped embeddings
+
+
+def answer_question(question, repo):
+
+    vector = embed_query(question)
+
     hits = safe_query(
         collection_name=COLLECTION,
         query=vector,
@@ -52,16 +52,11 @@ def answer_question(question, repo, owner):
                 FieldCondition(
                     key="repo",
                     match=MatchValue(value=repo)
-                ),
-                FieldCondition(
-                    key="owner",
-                    match=MatchValue(value=owner)
                 )
             ]
         )
     )
 
-    # Build context from retrieved chunks
     context = "\n\n".join(
         hit.payload.get("text", "")
         for hit in hits.points
@@ -70,8 +65,7 @@ def answer_question(question, repo, owner):
     if not context:
         return "No relevant documentation found for this repository."
 
-    # Send context to Groq LLM
-    completion = get_groq_client().chat.completions.create(
+    completion = groq_client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
             {
