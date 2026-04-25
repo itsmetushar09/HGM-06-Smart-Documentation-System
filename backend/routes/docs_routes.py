@@ -1,6 +1,3 @@
-import json
-import os
-import time
 import requests
 
 from flask import Blueprint, jsonify, request, session
@@ -9,31 +6,6 @@ from config import docs_collection, repos_collection
 from services.rag_service import embed_and_store
 
 docs_bp = Blueprint("docs", __name__)
-
-
-# agent logging helper
-def _agent_log(hypothesis_id: str, location: str, message: str, data: dict | None = None) -> None:
-    try:
-        root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        path = os.path.join(root, "debug-6be4ef.log")
-
-        payload = {
-            "sessionId": "6be4ef",
-            "hypothesisId": hypothesis_id,
-            "location": location,
-            "message": message,
-            "data": data or {},
-            "timestamp": int(time.time() * 1000),
-        }
-
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(payload) + "\n")
-
-    except OSError:
-        pass
-
-
-_agent_log("H1", "docs_routes.py:module", "docs_routes module loaded", {})
 
 
 # github auth header helper
@@ -100,8 +72,6 @@ def fetch_markdown_files(owner, repo, path=""):
 # load repo route
 @docs_bp.route("/docs/load-repo", methods=["POST"])
 def load_repo():
-
-    _agent_log("H2", "docs_routes.py:load_repo", "load_repo entry", {})
 
     data = request.get_json() or {}
 

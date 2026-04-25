@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: smartdocs-backend
+    env: python
+    plan: free
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && gunicorn -w 2 -b 0.0.0.0:$PORT app:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.11"

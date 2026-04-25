@@ -23,7 +23,7 @@ export default function AIChat({ repo }) {
     try {
 
       const response = await fetch(
-        "http://localhost:8001/ask-ai",
+        `${import.meta.env.VITE_API_BASE || "http://localhost:8001"}/ask-ai`,
         {
           method: "POST",
           credentials: "include",
@@ -32,7 +32,7 @@ export default function AIChat({ repo }) {
           },
           body: JSON.stringify({
             question: input,
-            repo: repo   // repo context ready for teammate's backend
+            repo: repo
           })
         }
       );

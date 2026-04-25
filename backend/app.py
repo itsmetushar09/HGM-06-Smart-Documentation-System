@@ -12,18 +12,21 @@ def create_app():
 
     app = Flask(__name__)
     
+    # Get CORS origins from env
+    cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+    is_production = os.getenv("FLASK_ENV") == "production"
 
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY","smartdocs-secret-key")
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["SESSION_PREMANENT"]=False
     app.config["SESSION_USE_SIGNER"]=True
     app.config["SESSION_COOKIE_SAMESITE"]="Lax"
-    app.config["SESSION_COOKIE_SECURE"]=False
+    app.config["SESSION_COOKIE_SECURE"]=is_production
     app.config["SESSION_COOKIE_HTTPONLY"]=True
     
 
     Session(app)
-    CORS(app,supports_credentials=True,origins=["http://localhost:5173"])
+    CORS(app, supports_credentials=True, origins=cors_origins)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(docs_bp)
@@ -36,4 +39,5 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",debug=False, port=8001)
+    port = int(os.getenv("PORT", 8001))
+    app.run(host="0.0.0.0", debug=False, port=port)

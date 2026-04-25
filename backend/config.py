@@ -39,5 +39,3 @@ qdrant_client = QdrantClient(
     timeout=30,
     check_compatibility=False
 )
-
-print("Qdrant initialized:", bool(QDRANT_URL))

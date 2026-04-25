@@ -95,5 +95,3 @@ def embed_and_store(repo, owner, docs):
 
     safe_upsert(COLLECTION, points)
 
-    print(f"Embedded {len(points)} documents from repo: {repo}")
-

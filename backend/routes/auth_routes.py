@@ -70,10 +70,8 @@ def github_callback():
         "access_token": access_token
     })
 
-    print("TOKEN STORED:", access_token)
-    print("SESSION:", dict(session))
-
-    return redirect("http://localhost:5173/docs")
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    return redirect(f"{frontend_url}/docs")
 
 @auth_bp.route("/auth/github/repos")
 def get_user_repos():

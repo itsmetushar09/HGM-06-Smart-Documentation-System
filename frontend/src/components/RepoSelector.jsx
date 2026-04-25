@@ -15,8 +15,6 @@ export default function RepoSelector({ setRepo }) {
       .then(res => res.json())
       .then(data => {
 
-        console.log("Repos received:", data);
-
         setRepos(data);
 
       });
@@ -50,14 +48,13 @@ export default function RepoSelector({ setRepo }) {
 
       const result = await response.json();
 
-      console.log("Repo loaded:", result);
-
       // store repo in Docs.jsx state
       setRepo(repo.name);
 
     } catch (err) {
 
-      console.error("Repo load failed:", err);
+      // Repo load failed
+      console.error("Repo load failed");
 
     } finally {
 
