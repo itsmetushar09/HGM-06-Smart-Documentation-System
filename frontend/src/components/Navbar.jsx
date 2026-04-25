@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const MotionDiv = motion.div;
-  const navigate = useNavigate();
 
+  const openDocs = () => {
+    window.location.href = "/docs";
+  }
   return (
     <MotionDiv
       initial={{ y: -50, opacity: 0 }}
@@ -27,7 +28,7 @@ export default function Navbar() {
 
       {/* Right */}
       <button
-        onClick={() => navigate("/docs")}
+        onClick={openDocs}
         className="bg-blue-600 px-3 py-1 rounded-lg hover:bg-blue-500"
       >
         Open Docs
