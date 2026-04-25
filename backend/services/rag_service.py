@@ -11,16 +11,12 @@ import uuid
 import time
 from services.embedding_model import get_embedder
 
-# ======================
-# Embedding Model
-# ======================
+
 
 COLLECTION = "docs_vectors"
 
 
-# ======================
-# Retry-safe helpers
-# ======================
+
 
 def safe_collection_exists(collection_name):
 
