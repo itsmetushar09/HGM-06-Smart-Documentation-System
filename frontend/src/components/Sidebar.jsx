@@ -1,6 +1,6 @@
 export default function Sidebar({ docs, setActiveDoc }) {
   return (
-    <div className="h-full w-64 bg-[#0b1b2b] border-r overflow-y-auto">
+    <div className="fixed left-0 top-0 h-screen w-64 bg-[#0b1b2b] border-r z-40">
 
       <div className="p-4 font-semibold">
         Docs
