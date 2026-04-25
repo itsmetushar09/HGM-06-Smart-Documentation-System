@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { API_BASE } from "../config";
 
 export default function AIChat({ repo }) {
-  const MotionDiv = motion.div;
 
   const [messages, setMessages] = useState([
     { type: "bot", text: "Hi 👋 Ask me anything about the docs!" },
@@ -49,7 +48,7 @@ export default function AIChat({ repo }) {
         }
       ]);
 
-    } catch {
+    } catch (error) {
 
       setMessages(prev => [
         ...prev,
@@ -81,7 +80,7 @@ export default function AIChat({ repo }) {
 
         {messages.map((msg, i) => (
 
-          <MotionDiv
+          <motion.div
             key={i}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -92,7 +91,7 @@ export default function AIChat({ repo }) {
             }`}
           >
             {msg.text}
-          </MotionDiv>
+          </motion.div>
 
         ))}
 

@@ -114,8 +114,6 @@ def load_repo():
     if not session.get("github_token"):
         return jsonify({"error": "not authenticated"}), 401
 
-    session["repo"] = repo
-    session["owner"] = owner
 
     # fetch markdown recursively
     entries = fetch_markdown_files(owner, repo)
@@ -149,6 +147,11 @@ def load_repo():
         {"$set": {"repo": repo, "owner": owner}},
         upsert=True
     )
+
+
+    # store repo session
+    session["repo"] = repo
+    session["owner"] = owner
 
 
     return jsonify({

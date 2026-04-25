@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 from config import qdrant_client as qdrant
 from qdrant_client.models import VectorParams, Distance
 from huggingface_hub import InferenceClient
+=======
+from config import qdrant_client as client
+from qdrant_client.models import VectorParams, Distance
+>>>>>>> parent of a89e188 (real fix)
 import uuid
 import time
 import os
@@ -58,6 +63,7 @@ def safe_upsert(collection_name, points):
     raise Exception("Failed to upsert vectors")
 
 
+<<<<<<< HEAD
 
 
 def embed_texts(texts):
@@ -74,12 +80,21 @@ def embed_texts(texts):
     return embeddings
 
 
+=======
+# ======================
+# Main embedding pipeline
+# ======================
+>>>>>>> parent of a89e188 (real fix)
 
 def embed_and_store(repo, owner, docs):
 
     if not safe_collection_exists(COLLECTION):
         safe_create_collection(COLLECTION)
 
+<<<<<<< HEAD
+=======
+    # Extract text
+>>>>>>> parent of a89e188 (real fix)
     texts = [doc["content"] for doc in docs]
 
     vectors = embed_texts(texts)
