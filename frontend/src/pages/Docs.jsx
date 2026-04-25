@@ -17,9 +17,9 @@ export default function Docs() {
 
   useEffect(() => {
 
-    if (!repo?.name) return;
+    if (!repo) return;
 
-    fetch(`${API_BASE}/docs?repo=${repo.name}`, {
+    fetch(`${API_BASE}/docs?repo=${repo}`, {
       credentials: "include"
     })
       .then(res => res.json())
@@ -53,7 +53,7 @@ export default function Docs() {
         <div className="flex justify-between items-center px-6 py-3 border-b">
 
           <div>
-            Current Repo: {repo?.fullName || "None"}
+            Current Repo: {repo}
           </div>
 
           <div className="flex gap-4 text-blue-400">
@@ -96,7 +96,7 @@ export default function Docs() {
           {/* Chat panel */}
           {showChat && (
             <div className="w-80 border-l bg-[#0b1b2b]">
-              <AIChat repo={repo.name} />
+              <AIChat repo={repo} />
             </div>
           )}
 

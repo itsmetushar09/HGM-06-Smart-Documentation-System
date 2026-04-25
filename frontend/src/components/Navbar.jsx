@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
+import { API_BASE } from "../config";
 
 export default function Navbar() {
   const MotionDiv = motion.div;
 
-  const openDocs = () => {
-    window.location.href = "/docs";
+  const login = () => {
+    window.location.href = `${API_BASE}/auth/github/login`;
   }
   return (
     <MotionDiv
@@ -28,10 +29,10 @@ export default function Navbar() {
 
       {/* Right */}
       <button
-        onClick={openDocs}
+        onClick={login}
         className="bg-blue-600 px-3 py-1 rounded-lg hover:bg-blue-500"
       >
-        Open Docs
+        Login with GitHub
       </button>
     </MotionDiv>
   );

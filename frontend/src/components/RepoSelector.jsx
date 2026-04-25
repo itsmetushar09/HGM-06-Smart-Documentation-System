@@ -1,17 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API_BASE } from "../config";
 
 export default function RepoSelector({ setRepo }) {
-  const [repoInput, setRepoInput] = useState("");
-  const [loadingRepo, setLoadingRepo] = useState(false);
-  const [error, setError] = useState("");
 
-  const loadRepo = async () => {
-    if (!repoInput.trim() || loadingRepo) return;
+  const [repos, setRepos] = useState([]);
+  const [loadingRepo, setLoadingRepo] = useState(null);
+
+
+  useEffect(() => {
+
+    fetch(`${API_BASE}/auth/github/repos`, {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+
+        console.log("Repos received:", data);
+
+        setRepos(data);
+
+      });
+
+  }, []);
+
+
+
+  const loadRepo = async (repo) => {
+
+    if (loadingRepo === repo.name) return;
+
+    setLoadingRepo(repo.name);
 
     try {
-      setLoadingRepo(true);
-      setError("");
 
       const response = await fetch(
         `${API_BASE}/docs/load-repo`,
@@ -22,60 +42,51 @@ export default function RepoSelector({ setRepo }) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            repoUrl: repoInput.trim()
+            owner: repo.owner.login,
+            repo: repo.name
           })
         }
       );
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to load repository");
-      }
+      console.log("Repo loaded:", result);
 
-      setRepo({
-        owner: result.owner,
-        name: result.repo,
-        fullName: result.full_name,
-      });
+      // store repo in Docs.jsx state
+      setRepo(repo.name);
 
     } catch (err) {
-      setError(err.message || "Repository load failed");
+
+      console.error("Repo load failed:", err);
 
     } finally {
-      setLoadingRepo(false);
+
+      setLoadingRepo(null);
+
     }
   };
 
+
+
   return (
+
     <div className="p-4 border-b">
-      <h2 className="font-semibold mb-2">Load Public GitHub Repo</h2>
 
-      <p className="mb-3 text-sm text-gray-500">
-        Paste `owner/repo` or a full GitHub URL.
-      </p>
+      <h2 className="font-semibold mb-2">Select Repo</h2>
 
-      <div className="flex gap-2">
-        <input
-          value={repoInput}
-          onChange={(e) => setRepoInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && loadRepo()}
-          placeholder="openai/openai-cookbook"
-          className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none"
-        />
+      {repos.map(repo => (
 
-        <button
-          onClick={loadRepo}
-          disabled={loadingRepo}
-          className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-500 disabled:opacity-60"
+        <div
+          key={repo.id}
+          onClick={() => loadRepo(repo)}
+          className="cursor-pointer hover:bg-gray-200 p-2 rounded"
         >
-          {loadingRepo ? "Loading..." : "Load"}
-        </button>
-      </div>
+          {repo.name}
+        </div>
 
-      {error ? (
-        <p className="mt-3 text-sm text-red-500">{error}</p>
-      ) : null}
+      ))}
+
     </div>
+
   );
 }
